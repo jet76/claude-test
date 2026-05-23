@@ -20,9 +20,9 @@ A bookmark manager for saving URLs to articles and websites you want to read lat
 ## Getting started
 
 ```bash
-pip install fastapi "uvicorn[standard]" pydantic pydantic-settings sqlalchemy alembic \
-            httpx beautifulsoup4 lxml python-slugify aiosqlite
-uvicorn app.main:app --reload
+cd readlater
+uv sync
+uv run uvicorn app.main:app --reload
 ```
 
 Open http://localhost:8000. The database is created automatically on first run.
@@ -51,6 +51,7 @@ Interactive docs at http://localhost:8000/docs.
 ## Running tests
 
 ```bash
-pip install pytest pytest-asyncio anyio
-pytest
+cd readlater
+uv sync --extra dev
+uv run pytest
 ```
