@@ -1,9 +1,11 @@
 import { API } from "../api.js";
 
 let animFrame = null;
+let _resizeHandler = null;
 
 export function mount(root) {
   if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+  if (_resizeHandler) { window.removeEventListener("resize", _resizeHandler); _resizeHandler = null; }
   root.innerHTML = '<div id="graph-canvas-wrap"></div><div id="graph-tooltip"></div>';
   const wrap = root.querySelector("#graph-canvas-wrap");
   const tooltip = root.querySelector("#graph-tooltip");
@@ -14,7 +16,14 @@ export function mount(root) {
       return;
     }
     initScene(wrap, tooltip, data);
+  }).catch(() => {
+    wrap.innerHTML = '<p class="empty-state" style="padding-top:80px">Failed to load graph data.</p>';
   });
+}
+
+export function unmount() {
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+  if (_resizeHandler) { window.removeEventListener("resize", _resizeHandler); _resizeHandler = null; }
 }
 
 function forceLayout(nodes, edges, iterations = 150) {
@@ -161,7 +170,14 @@ async function initScene(wrap, tooltip, data) {
       tooltip.style.display = "block";
       tooltip.style.left = e.clientX + 12 + "px";
       tooltip.style.top = e.clientY + 12 + "px";
-      tooltip.innerHTML = `<strong>${n.title || n.url}</strong><br/><small>${n.tags.join(", ") || "no tags"}</small>`;
+      tooltip.textContent = "";
+      const strong = document.createElement("strong");
+      strong.textContent = n.title || n.url;
+      const small = document.createElement("small");
+      small.textContent = n.tags.join(", ") || "no tags";
+      tooltip.appendChild(strong);
+      tooltip.appendChild(document.createElement("br"));
+      tooltip.appendChild(small);
       renderer.domElement.style.cursor = "pointer";
     } else {
       hoveredMesh = null;
@@ -177,13 +193,15 @@ async function initScene(wrap, tooltip, data) {
   });
 
   // Resize
-  window.addEventListener("resize", () => {
-    const w2 = wrap.clientWidth;
-    const h2 = wrap.clientHeight;
+  _resizeHandler = () => {
+    const w2 = wrap.clientWidth || window.innerWidth;
+    const h2 = wrap.clientHeight || (window.innerHeight - 56);
+    if (!w2 || !h2) return;
     camera.aspect = w2 / h2;
     camera.updateProjectionMatrix();
     renderer.setSize(w2, h2);
-  });
+  };
+  window.addEventListener("resize", _resizeHandler);
 
   function animate() {
     animFrame = requestAnimationFrame(animate);

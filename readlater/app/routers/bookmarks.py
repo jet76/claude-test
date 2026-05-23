@@ -4,8 +4,9 @@ from app.database import get_db
 from app.schemas.bookmark import BookmarkCreate, BookmarkPatch, BookmarkOut, BookmarkListOut, GraphOut
 from app.crud import bookmark as bookmark_crud
 from app.services.scraper import fetch_metadata
+from app.auth import require_api_key
 
-router = APIRouter(prefix="/api/bookmarks", tags=["bookmarks"])
+router = APIRouter(prefix="/api/bookmarks", tags=["bookmarks"], dependencies=[Depends(require_api_key)])
 
 
 async def _scrape_and_update(bookmark_id: int, url: str):

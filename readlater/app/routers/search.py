@@ -3,8 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas.bookmark import BookmarkListOut
 from app.crud import bookmark as bookmark_crud
+from app.auth import require_api_key
 
-router = APIRouter(prefix="/api/search", tags=["search"])
+router = APIRouter(prefix="/api/search", tags=["search"], dependencies=[Depends(require_api_key)])
 
 
 @router.get("", response_model=BookmarkListOut)

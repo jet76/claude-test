@@ -3,8 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas.tag import TagOut, TagCreate
 from app.crud import tag as tag_crud
+from app.auth import require_api_key
 
-router = APIRouter(prefix="/api/tags", tags=["tags"])
+router = APIRouter(prefix="/api/tags", tags=["tags"], dependencies=[Depends(require_api_key)])
 
 
 @router.get("", response_model=list[TagOut])

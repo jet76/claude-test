@@ -28,46 +28,51 @@ async function load(reset) {
     container.innerHTML = '<div class="spinner">Loading…</div>';
   }
 
-  const params = {
-    limit: PAGE_SIZE,
-    offset: reset ? 0 : offset,
-    is_archived: false,
-  };
-  if (currentState.searchQuery) params.q = currentState.searchQuery;
-  if (currentState.filterTags?.length) params.tags = currentState.filterTags.join(",");
+  try {
+    const params = {
+      limit: PAGE_SIZE,
+      offset: reset ? 0 : offset,
+      is_archived: false,
+    };
+    if (currentState.searchQuery) params.q = currentState.searchQuery;
+    if (currentState.filterTags?.length) params.tags = currentState.filterTags.join(",");
 
-  const data = await API.listBookmarks(params);
-  total = data.total;
+    const data = await API.listBookmarks(params);
+    total = data.total;
 
-  if (reset) {
-    offset = 0;
-    container.innerHTML = "";
-    listEl = document.createElement("div");
-    listEl.className = "bookmark-list";
-    container.appendChild(listEl);
-  }
+    if (reset) {
+      offset = 0;
+      container.innerHTML = "";
+      listEl = document.createElement("div");
+      listEl.className = "bookmark-list";
+      container.appendChild(listEl);
+    }
 
-  if (total === 0) {
-    listEl.innerHTML = '<p class="empty-state">No bookmarks yet. Add one!</p>';
-    return;
-  }
+    if (total === 0) {
+      listEl.innerHTML = '<p class="empty-state">No bookmarks yet. Add one!</p>';
+      return;
+    }
 
-  data.items.forEach((b) => listEl.appendChild(renderCard(b, onTagClick, onAction)));
-  offset += data.items.length;
+    data.items.forEach((b) => listEl.appendChild(renderCard(b, onTagClick, onAction)));
+    offset += data.items.length;
 
-  // Remove old load-more if present
-  container.querySelector(".load-more-btn")?.remove();
+    // Remove old load-more if present
+    container.querySelector(".load-more-btn")?.remove();
 
-  if (offset < total) {
-    const btn = document.createElement("button");
-    btn.className = "load-more-btn";
-    btn.textContent = `Load more (${total - offset} remaining)`;
-    btn.addEventListener("click", () => { btn.remove(); load(false); });
-    container.appendChild(btn);
+    if (offset < total) {
+      const btn = document.createElement("button");
+      btn.className = "load-more-btn";
+      btn.textContent = `Load more (${total - offset} remaining)`;
+      btn.addEventListener("click", () => { btn.remove(); load(false); });
+      container.appendChild(btn);
+    }
+  } catch {
+    container.innerHTML = '<p class="empty-state">Failed to load bookmarks. Please try again.</p>';
   }
 }
 
 function onTagClick(slug) {
+  currentState.filterTags = currentState.filterTags ?? [];
   const idx = currentState.filterTags.indexOf(slug);
   if (idx === -1) currentState.filterTags.push(slug);
   else currentState.filterTags.splice(idx, 1);

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./readlater.db"
     scrape_timeout: int = 10
     max_graph_nodes: int = 500
+    api_key: str = ""  # if empty, auth is disabled (dev mode)
 
 
 settings = Settings()
